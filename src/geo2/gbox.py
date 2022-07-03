@@ -1,13 +1,13 @@
-import os
 from functools import cached_property
 
-from utils import JSONFile, logx
+from shapely.geometry import Point, shape
+from utils import logx
 
 from geo2 import core, gbox_base
 
 log = logx.get_logger('geo2.gbox')
 
-MIN_PREC = 0.9 / 16
+MIN_PREC = 0.1
 SPLITS = 2
 
 
@@ -24,15 +24,12 @@ class GBox(gbox_base.GBoxBase):
         )
 
     def within_geo(self, geo):
-        [min_lng, max_lng, min_lat, max_lat] = core.get_bbox(geo)
-        return all(
-            [
-                min_lng < self.min_lng,
-                self.max_lng < max_lng,
-                min_lat < self.min_lat,
-                self.max_lat < max_lat,
-            ]
-        )
+        mid_point = Point(self.mid_lng, self.mid_lat)
+        multi_polygon = shape(geo)
+        for polygon in multi_polygon:
+            if polygon.contains(mid_point):
+                return True
+        return False
 
     def overlaps_with_geo(self, geo):
         for lnglat in core.iter_lnglat(geo):
@@ -68,16 +65,16 @@ class GBox(gbox_base.GBoxBase):
             )
         )
 
-        # n_filtered_region_to_geo = len(filtered_region_to_geo)
-        # if n_filtered_region_to_geo == 0:
-        #     filtered_region_to_geo = dict(
-        #         list(
-        #             filter(
-        #                 lambda item: self.within_geo(item[1]),
-        #                 region_to_geo.items(),
-        #             )
-        #         )
-        #     )
+        n_filtered_region_to_geo = len(filtered_region_to_geo)
+        if n_filtered_region_to_geo == 0:
+            filtered_region_to_geo = dict(
+                list(
+                    filter(
+                        lambda item: self.within_geo(item[1]),
+                        region_to_geo.items(),
+                    )
+                )
+            )
 
         filtered_region_ids = list(filtered_region_to_geo.keys())
         n_filtered_region_ids = len(filtered_region_ids)
@@ -101,21 +98,3 @@ class GBox(gbox_base.GBoxBase):
     @staticmethod
     def root():
         return GBox([0, 0], 1)
-
-
-def store_tree_file(region_to_geo):
-    root = GBox.root()
-    tree = root.get_tree(region_to_geo)
-    tree_file = '/tmp/geo2.tree.json'
-    JSONFile(tree_file).write(tree)
-    n_tree_file = os.path.getsize(tree_file) / 1_000_000
-    log.info(f'Wrote {tree_file} ({n_tree_file:.2f}MB)')
-    os.system(f'open -a atom {tree_file}')
-    return tree
-
-
-if __name__ == '__main__':
-    from geo2 import regionx
-
-    region_to_geo = regionx.get_region_to_geo()
-    store_tree_file(region_to_geo)
