@@ -26,7 +26,7 @@ def upload_data():
     for region_entity_type, log_inv_min_prec0 in [
         ['province', 2],
         ['district', 3],
-        ['dsd', 4],
+        ['dsd', 3],
     ]:
         for i in range(0, log_inv_min_prec0):
             log_inv_min_prec = i + 1
