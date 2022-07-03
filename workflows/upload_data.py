@@ -2,7 +2,7 @@ import os
 
 from utils import File, logx, timex
 
-from geo2 import common, gbox_tree
+from geo2 import common, gbox_tree, render_tree
 
 log = logx.get_logger('geo2.workflows.upload_data')
 
@@ -22,9 +22,14 @@ def build_readme():
 
 def upload_data():
     common.init_dir_data()
-    gbox_tree.GBoxTree('province', 2)
-    gbox_tree.GBoxTree('district', 3)
-    # gbox_tree.GBoxTree('dsd', 4)
+
+    for region_entity_type, log_inv_min_prec in [
+        ['province', 2],
+        ['district', 3],
+    ]:
+        gbox_tree.GBoxTree(region_entity_type, log_inv_min_prec)
+        render_tree.draw_tree(region_entity_type, log_inv_min_prec)
+
     build_readme()
 
 
