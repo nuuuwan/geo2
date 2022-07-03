@@ -25,6 +25,7 @@ STYLE_RECT = dict(
 
 STYLE_POLYGON = dict(
     fill="white",
+    fill_opacity=0.1,
     stroke="black",
 )
 
