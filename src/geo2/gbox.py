@@ -7,7 +7,6 @@ from geo2 import core, gbox_base
 
 log = logx.get_logger('geo2.gbox')
 
-MIN_PREC = 0.1
 SPLITS = 2
 
 
@@ -54,7 +53,7 @@ class GBox(gbox_base.GBoxBase):
                 )
         return child_gbox_list
 
-    def get_tree(self, region_to_geo):
+    def get_tree(self, region_to_geo, min_prec):
         print('[get_tree] ' + str(self), end="\r")
         filtered_region_to_geo = dict(
             list(
@@ -85,12 +84,12 @@ class GBox(gbox_base.GBoxBase):
         if n_filtered_region_ids == 1:
             return filtered_region_ids[0]
 
-        if self.prec <= MIN_PREC:
+        if self.prec <= min_prec:
             return filtered_region_ids
 
         tree = {}
         for child_gbox in self.child_list:
-            child_tree = child_gbox.get_tree(filtered_region_to_geo)
+            child_tree = child_gbox.get_tree(filtered_region_to_geo, min_prec)
             if child_tree:
                 tree[str(child_gbox)] = child_tree
         return tree

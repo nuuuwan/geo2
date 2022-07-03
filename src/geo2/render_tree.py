@@ -82,8 +82,9 @@ def draw_tree(region_to_geo, tree):
 
 if __name__ == '__main__':
     from geo2 import gbox, regionx
-
     region_entity_type = 'province'
+    log_inv_min_prec = 1
+    
     region_to_geo = regionx.get_region_to_geo(region_entity_type)
-    tree = gbox_tree.store_tree_file(region_to_geo)
+    tree = gbox_tree.store_tree_file(region_entity_type, log_inv_min_prec)
     draw_tree(region_to_geo, tree)
