@@ -1,7 +1,9 @@
+import os
+
 from utils import logx
 from utils.xmlx import _
-from gig import ents
-from geo2 import base, core
+
+from geo2 import core
 
 WIDTH = 500
 HEIGHT = 500
@@ -61,8 +63,10 @@ def render_polygon(t, polygon):
     d = ''.join(d_list) + 'Z'
     return _('path', [], {'d': d} | STYLE_POLYGON)
 
+
 def render_rect():
     return _('rect', None, STYLE_RECT)
+
 
 def render_polygons(t, region_to_geo):
     rendered_polygons = []
@@ -71,10 +75,11 @@ def render_polygons(t, region_to_geo):
             rendered_polygons.append(render_polygon(t, polygon))
     return rendered_polygons
 
-def render(region_to_geo):
+
+def render_svg(region_to_geo):
     bbox = core.BBOX_LK
     t = get_transform(bbox)
-    rendered_polygons = rendered_polygons(t, region_to_geo)
+    rendered_polygons = render_polygons(t, region_to_geo)
     svg = _(
         'svg',
         rendered_polygons,
@@ -82,34 +87,17 @@ def render(region_to_geo):
     )
     return svg
 
+
 def draw(region_to_geo):
-    svg = render(region_to_geo)
+    svg = render_svg(region_to_geo)
     svg_file = '/tmp/geo2.render.svg'
     svg.store(svg_file)
     log.info(f'Wrote {svg_file}')
+    os.system(f'open -a firefox {svg_file}')
+
 
 if __name__ == '__main__':
-    from geo import geodata
+    from geo2 import regionx
 
-    regions = ents.get_entities('province')
-    region_ids = [region['id'] for region in regions]
-    region_to_geo = dict(
-        list(
-            map(
-                lambda region_id: [
-                    region_id,
-                    geodata.get_region_geo(region_id),
-                ],
-                region_ids,
-            )
-        )
-    )
-    region_to_bbox = dict(
-        list(
-            map(
-                lambda item: [item[0], core.get_bbox(item[1])],
-                region_to_geo.items(),
-            )
-        )
-    )
+    region_to_geo = regionx.get_region_to_geo()
     draw(region_to_geo)
