@@ -2,6 +2,8 @@ from geo2 import gbox, core, render
 from utils import logx, colorx
 from utils.xmlx import _
 import random
+from gig import ents
+from geo import geodata
 
 log = logx.get_logger('render_tree')
 
@@ -22,10 +24,11 @@ def render_gbox(t, gbox_k, fill):
 
     return _('rect', None, dict(
         x=x1,
-        y=y1,
+        y=y2,
         width=width,
         height=height,
         fill=fill,
+        fill_opacity=0.5,
         stroke="black",
         stroke_width=0.1,
     ))
@@ -45,20 +48,19 @@ def render_gboxes(t, tree, rendered_gboxes):
 
     return rendered_gboxes
 
-def draw_tree(tree):
-
+def draw_tree(region_to_geo, tree):
     bbox = core.BBOX_LK
     log.debug(f'{bbox=}')
     t = render.get_transform(bbox)
 
+    rendered_polygons = render.render_polygons(t, region_to_geo)
     rendered_gboxes = render_gboxes(t, tree, [])
-
 
     svg = _(
         'svg',
         [
             render.render_rect(),
-        ] + rendered_gboxes,
+        ] + rendered_polygons + rendered_gboxes,
         render.STYLE_SVG,
     )
     svg_file = '/tmp/geo2.tree.svg'
@@ -67,5 +69,26 @@ def draw_tree(tree):
 
 
 if __name__ == '__main__':
-    tree = gbox.get_tree()
-    draw_tree(tree)
+    regions = ents.get_entities('district')
+    region_ids = [region['id'] for region in regions]
+    region_to_geo = dict(
+        list(
+            map(
+                lambda region_id: [
+                    region_id,
+                    geodata.get_region_geo(region_id),
+                ],
+                region_ids,
+            )
+        )
+    )
+    region_to_bbox = dict(
+        list(
+            map(
+                lambda item: [item[0], core.get_bbox(item[1])],
+                region_to_geo.items(),
+            )
+        )
+    )
+    tree = gbox.get_tree(region_to_bbox)
+    draw_tree(region_to_geo, tree)

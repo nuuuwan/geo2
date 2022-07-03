@@ -9,7 +9,7 @@ from geo2 import core
 
 log = logx.get_logger('geo2.gbox')
 
-MIN_PREC = 0.4
+MIN_PREC = 0.01
 SPLITS = 2
 
 
@@ -92,6 +92,7 @@ class GBox:
             [
                 self.min_lng < max_lng,
                 min_lng < self.max_lng,
+
                 self.min_lat < max_lat,
                 min_lat < self.max_lat,
             ]
@@ -148,32 +149,11 @@ class GBox:
         return GBox([0, 0], 1)
 
 
-def get_tree():
+def get_tree(region_to_bbox, force=True):
     tree_file = '/tmp/geo2.tree.json'
-    if os.path.exists(tree_file):
+    if os.path.exists(tree_file) and not force:
         return JSONFile(tree_file).read()
 
-    regions = ents.get_entities('province')
-    region_ids = [region['id'] for region in regions]
-    region_to_geo = dict(
-        list(
-            map(
-                lambda region_id: [
-                    region_id,
-                    geodata.get_region_geo(region_id),
-                ],
-                region_ids,
-            )
-        )
-    )
-    region_to_bbox = dict(
-        list(
-            map(
-                lambda item: [item[0], core.get_bbox(item[1])],
-                region_to_geo.items(),
-            )
-        )
-    )
     root = GBox.root()
     tree = root.get_tree(region_to_bbox)
 

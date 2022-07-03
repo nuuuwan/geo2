@@ -1,6 +1,6 @@
 from utils import logx
 from utils.xmlx import _
-
+from gig import ents
 from geo2 import base, core
 
 WIDTH = 500
@@ -22,8 +22,8 @@ STYLE_RECT = dict(
 )
 
 STYLE_POLYGON = dict(
-    fill="yellow",
-    stroke="red",
+    fill="white",
+    stroke="black",
 )
 
 
@@ -61,83 +61,55 @@ def render_polygon(t, polygon):
     d = ''.join(d_list) + 'Z'
     return _('path', [], {'d': d} | STYLE_POLYGON)
 
-
-def render_bbox(t, bbox):
-    [min_lng, max_lng, min_lat, max_lat] = bbox
-    x1, y1 = t([min_lng, max_lat])
-    x2, y2 = t([max_lng, min_lat])
-    width = x2 - x1
-    height = y2 - y1
-    return _(
-        'rect',
-        None,
-        dict(
-            x=x1,
-            y=y1,
-            width=width,
-            height=height,
-            fill="#ddd",
-            stroke="#888",
-        ),
-    )
-
-
-def render_squares(t, norm_bbox, digits):
-    prec = core.get_prec(digits)
-    [min_lng, max_lng, min_lat, max_lat] = norm_bbox
-    rendered_squares = []
-    for lng in base.rangef(min_lng, max_lng, prec):
-        for lat in base.rangef(min_lat, max_lat, prec):
-            x1, y1 = t([lng, lat + prec])
-            x2, y2 = t([lng + prec, lat])
-            width, height = x2 - x1, y2 - y1
-            rendered_squares.append(
-                _(
-                    'rect',
-                    None,
-                    dict(
-                        x=x1,
-                        y=y1,
-                        width=width,
-                        height=height,
-                        fill="None",
-                        stroke="blue",
-                    ),
-                )
-            )
-    return rendered_squares
-
 def render_rect():
     return _('rect', None, STYLE_RECT)
 
-def draw_geo(geo, digits):
-    bbox = core.get_bbox(geo)
-    log.debug(f'{bbox=}')
-    norm_bbox = core.get_norm_bbox(bbox, digits)
-    log.debug(f'{norm_bbox=}')
-    t = get_transform(norm_bbox)
-
-    rect = render_rect()
-
+def render_polygons(t, region_to_geo):
     rendered_polygons = []
-    for polygon in core.iter_polygons(geo):
-        rendered_polygons.append(render_polygon(t, polygon))
+    for region_id, geo in region_to_geo.items():
+        for polygon in core.iter_polygons(geo):
+            rendered_polygons.append(render_polygon(t, polygon))
+    return rendered_polygons
 
-    rendered_squares = render_squares(t, norm_bbox, digits)
-
+def render(region_to_geo):
+    bbox = core.BBOX_LK
+    t = get_transform(bbox)
+    rendered_polygons = rendered_polygons(t, region_to_geo)
     svg = _(
         'svg',
-        [rect, render_bbox(t, bbox)] + rendered_polygons + rendered_squares,
+        rendered_polygons,
         STYLE_SVG,
     )
-    svg_file = '/tmp/geo2.svg'
+    return svg
+
+def draw(region_to_geo):
+    svg = render(region_to_geo)
+    svg_file = '/tmp/geo2.render.svg'
     svg.store(svg_file)
     log.info(f'Wrote {svg_file}')
-
 
 if __name__ == '__main__':
     from geo import geodata
 
-    region_id = 'LK-3'
-    region_geo = geodata.get_region_geo(region_id)
-    draw_geo(region_geo, 0)
+    regions = ents.get_entities('province')
+    region_ids = [region['id'] for region in regions]
+    region_to_geo = dict(
+        list(
+            map(
+                lambda region_id: [
+                    region_id,
+                    geodata.get_region_geo(region_id),
+                ],
+                region_ids,
+            )
+        )
+    )
+    region_to_bbox = dict(
+        list(
+            map(
+                lambda item: [item[0], core.get_bbox(item[1])],
+                region_to_geo.items(),
+            )
+        )
+    )
+    draw(region_to_geo)
