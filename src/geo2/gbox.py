@@ -7,7 +7,7 @@ from geo2 import core
 
 log = logx.get_logger('geo2.gbox')
 
-MIN_PREC = 0.7
+MIN_PREC = 0.9 / 16
 SPLITS = 2
 
 
@@ -72,6 +72,18 @@ class GBox:
     def max_lnglat(self):
         return [self.max_lng, self.max_lat]
 
+    @cached_property
+    def mid_lng(self):
+        return self.min_lng + self.prec / 2
+
+    @cached_property
+    def mid_lat(self):
+        return self.min_lat + self.prec / 2
+
+    @cached_property
+    def mid_lnglat(self):
+        return [self.mid_lng, self.mid_lat]
+
     @cache
     def __str__(self):
         return f'{self.ix}:{self.iy}:{self.n}'
@@ -95,7 +107,18 @@ class GBox:
             ]
         )
 
-    def contains_geo(self, geo):
+    def within_geo(self, geo):
+        [min_lng, max_lng, min_lat, max_lat] = core.get_bbox(geo)
+        return all(
+            [
+                min_lng < self.min_lng,
+                self.max_lng < max_lng,
+                min_lat < self.min_lat,
+                self.max_lat < max_lat,
+            ]
+        )
+
+    def overlaps_with_geo(self, geo):
         for lnglat in core.iter_lnglat(geo):
             if self.contains_lnglat(lnglat):
                 return True
@@ -119,31 +142,42 @@ class GBox:
         return child_gbox_list
 
     def get_tree(self, region_to_geo):
-        log.debug('[get_tree] ' + str(self))
-        contained_region_to_geo = dict(
+        print('[get_tree] ' + str(self), end="\r")
+        filtered_region_to_geo = dict(
             list(
                 filter(
-                    lambda item: self.contains_geo(item[1]),
+                    lambda item: self.overlaps_with_geo(item[1]),
                     region_to_geo.items(),
                 )
             )
         )
 
-        contained_region_ids = list(contained_region_to_geo.keys())
-        n_contained_region_ids = len(contained_region_ids)
+        # n_filtered_region_to_geo = len(filtered_region_to_geo)
+        # if n_filtered_region_to_geo == 0:
+        #     filtered_region_to_geo = dict(
+        #         list(
+        #             filter(
+        #                 lambda item: self.within_geo(item[1]),
+        #                 region_to_geo.items(),
+        #             )
+        #         )
+        #     )
 
-        if n_contained_region_ids == 0:
+        filtered_region_ids = list(filtered_region_to_geo.keys())
+        n_filtered_region_ids = len(filtered_region_ids)
+
+        if n_filtered_region_ids == 0:
             return None
 
-        if n_contained_region_ids == 1:
-            return contained_region_ids[0]
+        if n_filtered_region_ids == 1:
+            return filtered_region_ids[0]
 
         if self.prec <= MIN_PREC:
-            return contained_region_ids
+            return filtered_region_ids
 
         tree = {}
         for child_gbox in self.child_list:
-            child_tree = child_gbox.get_tree(contained_region_to_geo)
+            child_tree = child_gbox.get_tree(filtered_region_to_geo)
             if child_tree:
                 tree[str(child_gbox)] = child_tree
         return tree
