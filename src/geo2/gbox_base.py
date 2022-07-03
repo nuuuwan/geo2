@@ -84,6 +84,9 @@ class GBoxBase:
     def to_str(self):
         return str(self)
 
+    def to_human_str(self):
+        return f'({self.min_lng,self.min_lat})-({self.max_lng,self.max_lat})'
+
     @classmethod
     def from_str(cls, s):
         [ix, iy, n] = [(int)(si) for si in s.split(':')]
