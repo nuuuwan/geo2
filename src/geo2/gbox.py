@@ -1,11 +1,7 @@
 import os
 from functools import cached_property
 
-from geo import geodata
-from gig import ents
 from utils import JSONFile, logx
-
-from geo2 import core
 
 log = logx.get_logger('geo2.gbox')
 
@@ -92,7 +88,6 @@ class GBox:
             [
                 self.min_lng < max_lng,
                 min_lng < self.max_lng,
-
                 self.min_lat < max_lat,
                 min_lat < self.max_lat,
             ]
