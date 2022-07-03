@@ -1,5 +1,3 @@
-import os
-
 from utils import logx
 from utils.xmlx import _
 
@@ -87,19 +85,3 @@ def render_svg(region_to_geo):
         STYLE_SVG,
     )
     return svg
-
-
-def draw(region_to_geo):
-    svg = render_svg(region_to_geo)
-    svg_file = '/tmp/geo2.render.svg'
-    svg.store(svg_file)
-    log.info(f'Wrote {svg_file}')
-    os.system(f'open -a firefox {svg_file}')
-
-
-if __name__ == '__main__':
-    from geo2 import regionx
-
-    region_entity_type = 'province'
-    region_to_geo = regionx.get_region_to_geo(region_entity_type)
-    draw(region_to_geo)
