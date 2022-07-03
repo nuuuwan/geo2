@@ -25,7 +25,7 @@ class GBox(gbox_base.GBoxBase):
     def within_geo(self, geo):
         mid_point = Point(self.mid_lng, self.mid_lat)
         multi_polygon = shape(geo)
-        for polygon in multi_polygon.geoms():
+        for polygon in multi_polygon.geoms:
             if polygon.contains(mid_point):
                 return True
         return False

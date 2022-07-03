@@ -74,5 +74,5 @@ class GBoxTree:
 
 if __name__ == '__main__':
     common.init_dir_data()
-    tree = GBoxTree('province', 1)
+    tree = GBoxTree('district', 2)
     print(tree.find_regions([80.63664111018507, 7.311872685858744]))
