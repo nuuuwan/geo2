@@ -77,6 +77,10 @@ class GBoxBase:
     def __str__(self):
         return f'{self.ix}:{self.iy}:{self.n}'
 
+    @cache
+    def __repr__(self):
+        return str(self)
+
     def to_str(self):
         return str(self)
 
