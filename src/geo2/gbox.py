@@ -1,11 +1,13 @@
 import os
-from functools import cached_property
+from functools import cache, cached_property
 
 from utils import JSONFile, logx
 
+from geo2 import core
+
 log = logx.get_logger('geo2.gbox')
 
-MIN_PREC = 0.01
+MIN_PREC = 0.7
 SPLITS = 2
 
 
@@ -70,6 +72,7 @@ class GBox:
     def max_lnglat(self):
         return [self.max_lng, self.max_lat]
 
+    @cache
     def __str__(self):
         return f'{self.ix}:{self.iy}:{self.n}'
 
@@ -81,17 +84,22 @@ class GBox:
         [ix, iy, n] = [(int)(si) for si in s.split(':')]
         return GBox([ix, iy], n)
 
-    def contains_bbox(self, bbox):
-        min_lng, max_lng, min_lat, max_lat = bbox
-
+    def contains_lnglat(self, lnglat):
+        lng, lat = lnglat
         return all(
             [
-                self.min_lng < max_lng,
-                min_lng < self.max_lng,
-                self.min_lat < max_lat,
-                min_lat < self.max_lat,
+                self.min_lng < lng,
+                lng < self.max_lng,
+                self.min_lat < lat,
+                lat < self.max_lat,
             ]
         )
+
+    def contains_geo(self, geo):
+        for lnglat in core.iter_lnglat(geo):
+            if self.contains_lnglat(lnglat):
+                return True
+        return False
 
     @cached_property
     def child_list(self):
@@ -110,17 +118,18 @@ class GBox:
                 )
         return child_gbox_list
 
-    def get_tree(self, region_to_bbox):
-        contained_region_to_bbox = dict(
+    def get_tree(self, region_to_geo):
+        log.debug('[get_tree] ' + str(self))
+        contained_region_to_geo = dict(
             list(
                 filter(
-                    lambda item: self.contains_bbox(item[1]),
-                    region_to_bbox.items(),
+                    lambda item: self.contains_geo(item[1]),
+                    region_to_geo.items(),
                 )
             )
         )
 
-        contained_region_ids = list(contained_region_to_bbox.keys())
+        contained_region_ids = list(contained_region_to_geo.keys())
         n_contained_region_ids = len(contained_region_ids)
 
         if n_contained_region_ids == 0:
@@ -134,7 +143,7 @@ class GBox:
 
         tree = {}
         for child_gbox in self.child_list:
-            child_tree = child_gbox.get_tree(contained_region_to_bbox)
+            child_tree = child_gbox.get_tree(contained_region_to_geo)
             if child_tree:
                 tree[str(child_gbox)] = child_tree
         return tree
@@ -144,16 +153,19 @@ class GBox:
         return GBox([0, 0], 1)
 
 
-def get_tree(region_to_bbox, force=True):
-    tree_file = '/tmp/geo2.tree.json'
-    if os.path.exists(tree_file) and not force:
-        return JSONFile(tree_file).read()
-
+def store_tree_file(region_to_geo):
     root = GBox.root()
-    tree = root.get_tree(region_to_bbox)
-
+    tree = root.get_tree(region_to_geo)
     tree_file = '/tmp/geo2.tree.json'
     JSONFile(tree_file).write(tree)
     n_tree_file = os.path.getsize(tree_file) / 1_000_000
     log.info(f'Wrote {tree_file} ({n_tree_file:.2f}MB)')
+    os.system(f'open -a atom {tree_file}')
     return tree
+
+
+if __name__ == '__main__':
+    from geo2 import regionx
+
+    region_to_geo = regionx.get_region_to_geo()
+    store_tree_file(region_to_geo)
