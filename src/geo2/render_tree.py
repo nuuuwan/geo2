@@ -1,14 +1,18 @@
-from geo2 import gbox, core, render
-from utils import logx, colorx
-from utils.xmlx import _
 import random
-from gig import ents
+
 from geo import geodata
+from gig import ents
+from utils import colorx, logx
+from utils.xmlx import _
+
+from geo2 import core, gbox, render
 
 log = logx.get_logger('render_tree')
 
 random.seed(1)
 REGION_TO_COLOR = {}
+
+
 def get_region_color(region_id):
     if region_id not in REGION_TO_COLOR:
         REGION_TO_COLOR[region_id] = colorx.random_hex()
@@ -22,16 +26,21 @@ def render_gbox(t, gbox_k, fill):
     width = x2 - x1
     height = y1 - y2
 
-    return _('rect', None, dict(
-        x=x1,
-        y=y2,
-        width=width,
-        height=height,
-        fill=fill,
-        fill_opacity=0.5,
-        stroke="black",
-        stroke_width=0.1,
-    ))
+    return _(
+        'rect',
+        None,
+        dict(
+            x=x1,
+            y=y2,
+            width=width,
+            height=height,
+            fill=fill,
+            fill_opacity=0.5,
+            stroke="black",
+            stroke_width=0.1,
+        ),
+    )
+
 
 def render_gboxes(t, tree, rendered_gboxes):
     for k, v in tree.items():
@@ -48,6 +57,7 @@ def render_gboxes(t, tree, rendered_gboxes):
 
     return rendered_gboxes
 
+
 def draw_tree(region_to_geo, tree):
     bbox = core.BBOX_LK
     log.debug(f'{bbox=}')
@@ -60,7 +70,9 @@ def draw_tree(region_to_geo, tree):
         'svg',
         [
             render.render_rect(),
-        ] + rendered_polygons + rendered_gboxes,
+        ]
+        + rendered_polygons
+        + rendered_gboxes,
         render.STYLE_SVG,
     )
     svg_file = '/tmp/geo2.tree.svg'
