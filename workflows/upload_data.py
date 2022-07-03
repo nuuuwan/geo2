@@ -24,7 +24,7 @@ def upload_data():
     common.init_dir_data()
     gbox_tree.GBoxTree('province', 2)
     gbox_tree.GBoxTree('district', 3)
-    gbox_tree.GBoxTree('dsd', 4)
+    # gbox_tree.GBoxTree('dsd', 4)
     build_readme()
 
 
