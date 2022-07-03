@@ -1,4 +1,3 @@
-import os
 import random
 
 from utils import colorx, logx
@@ -77,7 +76,6 @@ def draw_tree(region_to_geo, tree):
     svg_file = '/tmp/geo2.tree.svg'
     svg.store(svg_file)
     log.info(f'Wrote {svg_file}')
-    os.system(f'open -a firefox {svg_file}')
 
 
 if __name__ == '__main__':
