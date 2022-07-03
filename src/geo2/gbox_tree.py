@@ -20,7 +20,6 @@ def store(tree_file, tree):
     JSONFile(tree_file).write(tree)
     n_tree_file = os.path.getsize(tree_file) / 1_000_000
     log.info(f'Wrote {tree_file} ({n_tree_file:.2f}MB)')
-    os.system(f'open -a atom {tree_file}')
 
 
 def load(tree_file):
