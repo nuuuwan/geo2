@@ -4,26 +4,23 @@ from geo import geodata
 from gig import ents
 from utils import logx
 
-from geo2 import core
-
 log = logx.get_logger('render')
-REGION_ENTITY_TYPE = 'province'
 
 
 @cache
-def get_regions():
-    return ents.get_entities(REGION_ENTITY_TYPE)
+def get_regions(region_entity_type):
+    return ents.get_entities(region_entity_type)
 
 
 @cache
-def get_region_ids():
-    regions = get_regions()
+def get_region_ids(region_entity_type):
+    regions = get_regions(region_entity_type)
     return [region['id'] for region in regions]
 
 
 @cache
-def get_region_to_geo():
-    region_ids = get_region_ids()
+def get_region_to_geo(region_entity_type):
+    region_ids = get_region_ids(region_entity_type)
     return dict(
         list(
             map(
@@ -32,19 +29,6 @@ def get_region_to_geo():
                     geodata.get_region_geo(region_id),
                 ],
                 region_ids,
-            )
-        )
-    )
-
-
-@cache
-def get_region_to_bbox():
-    region_to_geo = get_region_to_geo()
-    return dict(
-        list(
-            map(
-                lambda item: [item[0], core.get_bbox(item[1])],
-                region_to_geo.items(),
             )
         )
     )

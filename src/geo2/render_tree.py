@@ -4,7 +4,7 @@ import random
 from utils import colorx, logx
 from utils.xmlx import _
 
-from geo2 import core, render
+from geo2 import core, render, gbox_tree
 
 log = logx.get_logger('render_tree')
 
@@ -83,6 +83,7 @@ def draw_tree(region_to_geo, tree):
 if __name__ == '__main__':
     from geo2 import gbox, regionx
 
-    region_to_geo = regionx.get_region_to_geo()
-    tree = gbox.store_tree_file(region_to_geo)
+    region_entity_type = 'province'
+    region_to_geo = regionx.get_region_to_geo(region_entity_type)
+    tree = gbox_tree.store_tree_file(region_to_geo)
     draw_tree(region_to_geo, tree)

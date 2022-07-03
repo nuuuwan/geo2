@@ -20,6 +20,6 @@ def store_tree_file(region_to_geo):
 
 if __name__ == '__main__':
     from geo2 import regionx
-
-    region_to_geo = regionx.get_region_to_geo()
+    region_entity_type = 'province'
+    region_to_geo = regionx.get_region_to_geo(region_entity_type)
     store_tree_file(region_to_geo)
