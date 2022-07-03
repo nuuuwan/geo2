@@ -23,12 +23,15 @@ def build_readme():
 def upload_data():
     common.init_dir_data()
 
-    for region_entity_type, log_inv_min_prec in [
+    for region_entity_type, log_inv_min_prec0 in [
         ['province', 2],
         ['district', 3],
+        ['dsd', 4],
     ]:
-        gbox_tree.GBoxTree(region_entity_type, log_inv_min_prec)
-        render_tree.draw_tree(region_entity_type, log_inv_min_prec)
+        for i in range(0, log_inv_min_prec0):
+            log_inv_min_prec = i + 1
+            gbox_tree.GBoxTree(region_entity_type, log_inv_min_prec)
+            render_tree.draw_tree(region_entity_type, log_inv_min_prec)
 
     build_readme()
 
