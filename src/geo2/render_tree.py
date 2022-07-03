@@ -3,7 +3,7 @@ import random
 from utils import colorx, logx
 from utils.xmlx import _
 
-from geo2 import core, gbox_tree, render
+from geo2 import core, gbox, gbox_tree, regionx, render
 
 log = logx.get_logger('render_tree')
 
@@ -56,15 +56,14 @@ def render_gboxes(t, tree, rendered_gboxes):
     return rendered_gboxes
 
 
-def draw_tree(region_to_geo, tree):
+def render_svg(region_to_geo, tree):
     bbox = core.BBOX_LK
-    log.debug(f'{bbox=}')
     t = render.get_transform(bbox)
 
     rendered_polygons = render.render_polygons(t, region_to_geo)
     rendered_gboxes = render_gboxes(t, tree, [])
 
-    svg = _(
+    return _(
         'svg',
         [
             render.render_rect(),
@@ -73,17 +72,17 @@ def draw_tree(region_to_geo, tree):
         + rendered_polygons,
         render.STYLE_SVG,
     )
-    svg_file = '/tmp/geo2.tree.svg'
+
+
+def draw_tree(region_entity_type, log_inv_min_prec):
+    region_to_geo = regionx.get_region_to_geo(region_entity_type)
+    tree = gbox_tree.GBoxTree(region_entity_type, log_inv_min_prec)
+
+    svg = render_svg(region_to_geo, tree.tree)
+    svg_file = tree.tree_file[:-5] + ".svg"
     svg.store(svg_file)
     log.info(f'Wrote {svg_file}')
 
 
 if __name__ == '__main__':
-    from geo2 import gbox, regionx
-
-    region_entity_type = 'province'
-    log_inv_min_prec = 1
-
-    region_to_geo = regionx.get_region_to_geo(region_entity_type)
-    tree = gbox_tree.load_tree(region_entity_type, log_inv_min_prec)
-    draw_tree(region_to_geo, tree)
+    draw_tree('province', 1)
