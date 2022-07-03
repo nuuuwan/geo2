@@ -32,7 +32,6 @@ def load(tree_file):
 def find_regions(tree, lnglat):
     for k, v in tree.items():
         gbox_k = gbox.GBox.from_str(k)
-        log.debug(f'{gbox_k=}')
         if gbox_k.contains_lnglat(lnglat):
             if isinstance(v, str):
                 return [v]
@@ -74,3 +73,8 @@ class GBoxTree:
 
     def find_regions(self, lnglat):
         return find_regions(self.tree, lnglat)
+
+
+if __name__ == '__main__':
+    tree = GBoxTree('province', 1)
+    print(tree.find_regions([80.63664111018507, 7.311872685858744]))
