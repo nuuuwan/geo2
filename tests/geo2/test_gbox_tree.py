@@ -1,10 +1,11 @@
 import unittest
 
-from geo2 import gbox_tree
+from geo2 import common, gbox_tree
 
 
 class TestCase(unittest.TestCase):
     def test(self):
+        common.init_dir_data()
         tree = gbox_tree.GBoxTree('province', 1)
         for [lnglat, expected_region_ids] in [
             [[79.86481964805327, 6.917311842223569], ['LK-1']],
@@ -15,7 +16,3 @@ class TestCase(unittest.TestCase):
         ]:
             actual_region_ids = tree.find_regions(lnglat)
             self.assertEqual(expected_region_ids, actual_region_ids)
-
-
-if __name__ == '__main__':
-    unittest.main()
