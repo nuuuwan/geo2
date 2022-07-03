@@ -13,9 +13,7 @@ class TestCase(unittest.TestCase):
             [[80.01192181056106, 9.662254850528123], ['LK-4']],
             [[81.56060482552991, 7.927743036188908], ['LK-5']],
         ]:
-            actual_region_ids = tree.find_regions(
-                [79.86481964805327, 6.917311842223569]
-            )
+            actual_region_ids = tree.find_regions(lnglat)
             self.assertEqual(expected_region_ids, actual_region_ids)
 
 
