@@ -10,7 +10,7 @@ def get_tree_file(region_entity_type, log_inv_min_prec):
     return f'/tmp/geo2.tree.{region_entity_type}.prec{log_inv_min_prec}.json'
 
 
-def store_tree_file(region_entity_type, log_inv_min_prec):
+def store_tree(region_entity_type, log_inv_min_prec):
     log.debug(f'{region_entity_type=}, {log_inv_min_prec=}')
     min_prec = 0.1 ** log_inv_min_prec
     region_to_geo = regionx.get_region_to_geo(region_entity_type)
@@ -24,6 +24,12 @@ def store_tree_file(region_entity_type, log_inv_min_prec):
     os.system(f'open -a atom {tree_file}')
     return tree
 
+def load_tree(region_entity_type, log_inv_min_prec):
+    tree_file = get_tree_file(region_entity_type, log_inv_min_prec)
+    if not os.path.exists(tree_file):
+        store_tree(region_entity_type, log_inv_min_prec)
+
+    return JSONFile(tree_file).read()
 
 if __name__ == '__main__':
-    store_tree_file('province', 1)
+    store_tree('province', 1)
