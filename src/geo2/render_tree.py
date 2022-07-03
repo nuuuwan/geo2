@@ -1,11 +1,10 @@
+import os
 import random
 
-from geo import geodata
-from gig import ents
 from utils import colorx, logx
 from utils.xmlx import _
 
-from geo2 import core, gbox, render
+from geo2 import core, render
 
 log = logx.get_logger('render_tree')
 
@@ -71,36 +70,19 @@ def draw_tree(region_to_geo, tree):
         [
             render.render_rect(),
         ]
-        + rendered_polygons
-        + rendered_gboxes,
+        + rendered_gboxes
+        + rendered_polygons,
         render.STYLE_SVG,
     )
     svg_file = '/tmp/geo2.tree.svg'
     svg.store(svg_file)
     log.info(f'Wrote {svg_file}')
+    os.system(f'open -a firefox {svg_file}')
 
 
 if __name__ == '__main__':
-    regions = ents.get_entities('district')
-    region_ids = [region['id'] for region in regions]
-    region_to_geo = dict(
-        list(
-            map(
-                lambda region_id: [
-                    region_id,
-                    geodata.get_region_geo(region_id),
-                ],
-                region_ids,
-            )
-        )
-    )
-    region_to_bbox = dict(
-        list(
-            map(
-                lambda item: [item[0], core.get_bbox(item[1])],
-                region_to_geo.items(),
-            )
-        )
-    )
-    tree = gbox.get_tree(region_to_bbox)
+    from geo2 import gbox, regionx
+
+    region_to_geo = regionx.get_region_to_geo()
+    tree = gbox.store_tree_file(region_to_geo)
     draw_tree(region_to_geo, tree)
