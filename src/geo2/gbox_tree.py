@@ -48,10 +48,8 @@ class GBoxTree:
 
         self.tree = load(self.tree_file)
         if not self.tree:
-            self.tree = self.build(
-                self.region_entity_type, self.log_inv_min_prec
-            )
-            self.store(self.tree_file, self.tree)
+            self.tree = build(self.region_entity_type, self.log_inv_min_prec)
+            store(self.tree_file, self.tree)
 
     @cache
     def __len__(self):
