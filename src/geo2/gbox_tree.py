@@ -4,7 +4,7 @@ from functools import cache, cached_property
 
 from utils import JSONFile, logx
 
-from geo2 import gbox, regionx
+from geo2 import common, gbox, regionx
 
 log = logx.get_logger('geo2.gbox_tree')
 
@@ -57,9 +57,9 @@ class GBoxTree:
 
     @cached_property
     def tree_file(self):
-        return (
-            f'/tmp/geo2.tree.{self.region_entity_type}'
-            + f'.prec{self.log_inv_min_prec}.json'
+        return os.path.join(
+            common.DIR_DATA,
+            f'tree.{self.region_entity_type}.prec{self.log_inv_min_prec}.json',
         )
 
     def __str__(self):
@@ -74,5 +74,6 @@ class GBoxTree:
 
 
 if __name__ == '__main__':
+    common.init_dir_data()
     tree = GBoxTree('province', 1)
     print(tree.find_regions([80.63664111018507, 7.311872685858744]))
